@@ -1,66 +1,168 @@
-# Lost & Found Portal - 50% Core Version
+🧳 Lost & Found Management System
 
-A simplified college campus lost and found portal with essential features for reporting and searching items.
+A full-stack Lost & Found Portal designed to help students report, discover, and claim lost or found items in an institution.
+The system provides secure authentication, item reporting, and claim management with a real database backend.
 
-## Features
+🔗 Live Demo:
 
-- **Student Authentication**: Register and login system
-- **Lost Items**: Report and view lost items
-- **Found Items**: Report and view found items with search functionality
-- **MySQL Database**: All data stored in MySQL database
-- **Responsive Design**: Works on desktop and mobile
+https://lostandfound-portal-production.up.railway.app
 
-## Quick Start
+🔗 GitHub Repository:
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+https://github.com/ArpitUniyal/Lost_and_found-Portal
 
-2. **Set up environment:**
-   ```bash
-   cp env.example .env
-   ```
-   Edit `.env` with your MySQL credentials.
+📌 Project Overview
 
-3. **Initialize database:**
-   ```bash
-   npm run init-db
-   ```
+The Lost & Found Management System digitizes the traditional lost-and-found process by allowing users to:
 
-4. **Start the server:**
-   ```bash
-   npm run dev
-   ```
+Register and authenticate securely
 
-5. **Access the portal:**
-   Open `http://localhost:3000`
+Report lost or found items
 
-## Usage
+Browse reported items
 
-1. Register a new student account
-2. Login with your credentials
-3. Report lost or found items
-4. Search through found items using the search bar
+Claim found items
 
-## Database Tables
+Track claim status
 
-- `students` - User information
-- `lost_items` - Lost item reports
-- `found_items` - Found item reports
-- `categories` - Item categories
+The project is built using a Node.js backend, MySQL database, and a responsive HTML/CSS/JavaScript frontend, and is fully deployed on the cloud.
 
-## API Endpoints
+🚀 Features
 
-- `POST /api/auth/register` - Register student
-- `POST /api/auth/login` - Login student
-- `GET /api/lost-items` - Get all lost items
-- `POST /api/lost-items` - Report lost item
-- `GET /api/found-items` - Get all found items
-- `POST /api/found-items` - Report found item
+🔐 User Authentication
+
+Secure registration and login using JWT
+
+📦 Lost Item Reporting
+
+Submit details of lost items
+
+🔎 Found Item Reporting
+
+Report items that have been found
+
+🧾 Claim Management
+
+Users can claim found items
+
+Claim status tracking
+
+🗄️ Relational Database Design
+
+Proper normalization with foreign key constraints
+
+🌐 Public Cloud Deployment
+
+Accessible from any device and network
+
+🛠️ Tech Stack
+Frontend
+
+HTML5
+
+CSS3
+
+Vanilla JavaScript (Fetch API)
+
+Backend
+
+Node.js
+
+Express.js
+
+JSON Web Tokens (JWT)
+
+bcrypt (password hashing)
+
+Database
+
+MySQL
+
+Relational schema with foreign keys
+
+Deployment
+
+Railway (Backend + MySQL)
+
+GitHub (Version Control)
+
+🗂️ Project Structure
+Lost_and_found-Portal/
+│
+├── public/
+│   ├── assets/
+│   ├── uploads/
+│   │   └── .gitkeep
+│   ├── index.html
+│   ├── styles.css
+│   └── script.js
+│
+├── routes/
+│   ├── auth.js
+│   ├── lostItems.js
+│   ├── foundItems.js
+│   └── claims.js
+│
+├── database/
+│   └── schema.sql
+│
+├── config/
+│   └── database.js
+│
+├── server.js
+├── package.json
+├── package-lock.json
+├── env.example
+└── README.md
+
+🧠 Database Design
+Tables
+
+students – user accounts
+
+categories – item categorization
+
+lost_items – lost item reports
+
+found_items – found item reports
+
+claims – claim requests and status
+
+The schema enforces referential integrity using foreign keys.
+
+🔐 Environment Variables
+
+Create the following variables in your deployment environment:
+
+DB_HOST
+DB_PORT
+DB_USER
+DB_PASSWORD
+DB_NAME
+JWT_SECRET
+PORT
 
 
+Sensitive values are never committed to GitHub.
+
+▶️ Running the Project Locally
+# Install dependencies
+npm install
+
+# Start the server
+npm start
 
 
+Access locally at:
 
+http://localhost:3000
 
+🌍 Deployment Details
+
+The backend and database are deployed on Railway
+
+MySQL is used as the production database
+
+The application is publicly accessible via a single URL
+
+File uploads are stored locally (ephemeral on free tier)
