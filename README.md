@@ -1,36 +1,103 @@
 # Lost & Found Portal
 
-A full-stack **College Campus Lost & Found Portal** that allows students to report lost or found items, verify ownership, and coordinate the return of items through a claim workflow.
+A **college campus Lost & Found Portal** designed to help students report lost or found belongings, discover matching items, verify ownership, and coordinate the return of items through a structured claim workflow.
 
-## Features
+## Overview
 
-- Student registration and login with JWT authentication
+The portal provides two main item flows:
+
+- **Lost Items** — students can report and manage items they have lost.
+- **Found Items** — students can report items they have found on campus.
+
+When a student believes a found item belongs to them, the system provides an automated claim-verification process. The reported location is compared with the location stored for the found item. A successful match automatically approves the claim; an unsuccessful verification is rejected.
+
+The return process uses **two-sided confirmation**, allowing both the claimer and finder to confirm the handover before the item is finally closed.
+
+## Key Features
+
+### Student Authentication
+- Student registration and login
+- JWT-based authentication
 - Password hashing with bcrypt
-- Report lost items with:
-  - Item name
-  - Description
-  - Location
-  - Date/time lost
-  - Category
-  - Optional image
-- Report found items with similar details
-- Browse active lost and found items
-- Search lost and found items from the frontend
-- Delete items created by the authenticated user
-- Claim verification using the reported found-item location
-- Automatic claim approval/rejection based on location matching
-- Maximum of 3 rejected verification attempts per user per found item per day
-- Finder-to-owner notification workflow
-- Two-sided claim confirmation:
-  - Claimer confirms the item was claimed back
-  - Finder confirms the item was returned
-- Claim completion when both sides confirm
-- Automatically closes the found item after successful completion
-- Locked-item handling to prevent conflicting claims
-- Finder-side claim information with claimant contact details
-- Claimer-side claim information with finder contact details
+- Protected operations based on the authenticated student
 
-## Tech Stack
+### Lost Item Management
+- Report lost items with item details, location, date/time, category, description, and optional image
+- View and search reported lost items
+- Manage items reported by the logged-in student
+
+### Found Item Management
+- Report found items with relevant item and location details
+- View and search found items
+- Track the status of found items
+- Prevent inappropriate claims on items that are already locked or closed
+
+### Automated Claim Verification
+The claim process is based on the information provided by the potential owner.
+
+```text
+Request Claim
+     │
+     ▼
+Enter verification location
+     │
+     ▼
+Compare with found-item location
+     │
+ ┌───┴────┐
+ ▼        ▼
+Match   No Match
+ │        │
+ ▼        ▼
+Approved Rejected
+```
+
+Location comparison normalizes capitalization and extra whitespace before checking for an exact match.
+
+The system also limits rejected verification attempts to **three attempts per user, per found item, per day**.
+
+### Claim & Return Workflow
+
+After a claim is automatically approved, both participants can confirm the return independently.
+
+```text
+                 Claim Approved
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+      Claimer confirms      Finder confirms
+             │                   │
+             ▼                   ▼
+      claimer_marked        finder_marked
+             │                   │
+             └─────────┬─────────┘
+                       ▼
+                Both confirmed
+                       │
+                       ▼
+                   completed
+                       │
+                       ▼
+                Found item closed
+```
+
+If the **claimer confirms first**, the finder receives a claim card containing the claimant's details and can confirm the return.
+
+If the **finder confirms first**, the claimer receives a claim card containing the finder's details and can confirm the return.
+
+### Finder-to-Owner Notification
+
+A finder can notify the student associated with a lost-item report when they believe they have found that item.
+
+The system links the relevant lost and found records through the `claims` table and prevents conflicting active notifications.
+
+### Claim Locking
+
+The application tracks found and lost items that are already involved in an active claim/notification or have been completed/closed.
+
+This prevents users from creating conflicting claim operations for the same item.
+
+## Technology Stack
 
 ### Frontend
 - HTML5
@@ -42,149 +109,137 @@ A full-stack **College Campus Lost & Found Portal** that allows students to repo
 - Node.js
 - Express.js
 - REST APIs
-- JWT authentication
+- JWT
 - bcryptjs
 - Express Validator
 - Multer
 
 ### Database
 - MySQL
-- mysql2 connection pool
+- mysql2
 
-## Architecture
-
-```text
-Browser
-   │
-   ▼
-HTML / CSS / JavaScript
-   │
-   │ REST API + JWT
-   ▼
-Node.js / Express
-   │
-   ├── Authentication
-   ├── Lost Items
-   ├── Found Items
-   └── Claims
-   │
-   ▼
-MySQL Database
-```
-
-Uploaded images are stored under:
+## Application Architecture
 
 ```text
-public/uploads/
+┌───────────────────────────────┐
+│          Frontend             │
+│       HTML / CSS / JS         │
+└───────────────┬───────────────┘
+                │
+                │ REST API + JWT
+                ▼
+┌───────────────────────────────┐
+│        Node.js / Express      │
+│                               │
+│  Authentication              │
+│  Lost Items                  │
+│  Found Items                 │
+│  Claims                      │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│            MySQL              │
+│                               │
+│ students                     │
+│ lost_items                   │
+│ found_items                  │
+│ claims                       │
+│ categories                   │
+└───────────────────────────────┘
 ```
 
-## Claim Workflow
+## Database Relationships
 
-The application uses automatic verification rather than manual finder approval.
+The main entities are:
 
 ```text
-User requests a found item
-        │
-        ▼
-Location verification
-        │
-   ┌────┴────┐
-   │         │
- Match    No Match
-   │         │
-   ▼         ▼
-approved  rejected
+students
    │
-   ▼
-Claimer / Finder confirmation
+   ├──────────────► lost_items
    │
-   ├── Claimer confirms → claimer_marked
+   ├──────────────► found_items
    │
-   └── Finder confirms  → finder_marked
-             │
-             ▼
-       Both confirm
-             │
-             ▼
-          completed
-             │
-             ▼
-       Found item closed
+   └──────────────► claims
+                         │
+             ┌───────────┴───────────┐
+             ▼                       ▼
+        lost_items              found_items
 ```
 
-The system also checks existing claim states so that an item already involved in an active/completed claim is treated as unavailable for another claim.
+- `lost_items.student_id` identifies the student who reported the lost item.
+- `found_items.finder_id` identifies the student who reported the found item.
+- `claims.claimer_id` identifies the student attempting to claim a found item.
+- `claims.lost_item_id` links a claim to a lost-item report when applicable.
+- `claims.found_item_id` links a claim to a found-item report.
 
-## Main API Routes
+## Claim Statuses
+
+The claim workflow uses the following states:
+
+| Status | Meaning |
+|---|---|
+| `approved` | Verification succeeded |
+| `rejected` | Verification failed |
+| `claimer_marked` | Claimer confirmed the handover |
+| `finder_marked` | Finder confirmed the handover |
+| `pending` | Claim is in an intermediate state |
+| `completed` | Both sides have completed the confirmation process |
+
+Found items are ultimately marked:
+
+```text
+closed
+```
+
+when the claim is successfully completed.
+
+## Main API Areas
 
 ### Authentication
 
 ```text
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/profile
+/api/auth
 ```
+
+Handles student registration, login, and authenticated user information.
 
 ### Lost Items
 
 ```text
-GET    /api/lost-items
-GET    /api/lost-items/:id
-POST   /api/lost-items
-DELETE /api/lost-items/:id
+/api/lost-items
 ```
+
+Handles creation, retrieval, and management of lost-item reports.
 
 ### Found Items
 
 ```text
-GET    /api/found-items
-GET    /api/found-items/:id
-POST   /api/found-items
-DELETE /api/found-items/:id
+/api/found-items
 ```
+
+Handles creation, retrieval, and management of found-item reports.
 
 ### Claims
 
 ```text
-POST  /api/claims/verify-request
-POST  /api/claims/notify-owner
-
-GET   /api/claims/finder/pending
-GET   /api/claims/my
-GET   /api/claims/found/locked
-GET   /api/claims/lost/locked
-
-PATCH /api/claims/:id/claimer-confirm
-PATCH /api/claims/:id/finder-returned
+/api/claims
 ```
 
-## Database
-
-The main tables are:
+Main claim operations include:
 
 ```text
-students
-lost_items
-found_items
-claims
-categories
+POST  /verify-request
+POST  /notify-owner
+
+GET   /finder/pending
+GET   /my
+GET   /found/locked
+GET   /lost/locked
+
+PATCH /:id/claimer-confirm
+PATCH /:id/finder-returned
 ```
-
-Core relationships:
-
-```text
-students
-   │
-   ├── lost_items
-   ├── found_items
-   └── claims (as claimer)
-
-lost_items ────── claims
-found_items ───── claims
-```
-
-`found_items.finder_id` identifies the student who reported the found item.
-
-`claims.claimer_id` identifies the student attempting to claim the item.
 
 ## Project Structure
 
@@ -201,11 +256,10 @@ Lost_and_found-Portal-main/
 │   └── auth.js
 │
 ├── public/
-│   ├── assets/
-│   ├── uploads/
 │   ├── index.html
 │   ├── script.js
-│   └── styles.css
+│   ├── styles.css
+│   └── uploads/
 │
 ├── routes/
 │   ├── auth.js
@@ -217,117 +271,29 @@ Lost_and_found-Portal-main/
 │   ├── create-tables.js
 │   └── init-database.js
 │
+├── server.js
 ├── env.example
-├── package.json
-└── server.js
+└── package.json
 ```
 
-## Setup
+## Security & Validation
 
-### 1. Prerequisites
+The backend includes:
 
-Install:
+- JWT authentication for protected endpoints
+- bcrypt password hashing
+- Request validation using Express Validator
+- Authorization checks for user-owned records
+- Protection against users claiming their own found-item reports
+- Claim-state validation
+- Rejected-attempt limits
+- Locked-item checks
+- Controlled claim completion and item closure
 
-- Node.js
-- npm
-- MySQL
+## Project Goal
 
-### 2. Clone the repository
+The project focuses on creating a structured digital process for handling campus lost-and-found items:
 
-```bash
-git clone <your-repository-url>
-cd Lost_and_found-Portal-main
-```
+> **Report → Discover → Verify → Claim → Confirm → Return**
 
-### 3. Install dependencies
-
-```bash
-npm install
-```
-
-### 4. Configure environment variables
-
-Create a `.env` file based on `env.example`.
-
-Example:
-
-```env
-PORT=3000
-NODE_ENV=development
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=lost_and_found
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-
-JWT_SECRET=your_secret_key
-JWT_EXPIRES_IN=7d
-
-FRONTEND_URL=http://localhost:3000
-```
-
-Use your own database password and JWT secret. Do not commit `.env` to GitHub.
-
-### 5. Create the database
-
-Create the MySQL database:
-
-```sql
-CREATE DATABASE lost_and_found;
-```
-
-Then initialize the required tables using the project's database scripts or execute:
-
-```text
-database/schema.sql
-```
-
-### 6. Start the application
-
-```bash
-npm start
-```
-
-The server runs on:
-
-```text
-http://localhost:3000
-```
-
-Open the application in a browser:
-
-```text
-http://localhost:3000
-```
-
-For development, the project also includes a `dev` npm script.
-
-## Environment Variables
-
-| Variable | Purpose |
-|---|---|
-| `PORT` | Backend server port |
-| `NODE_ENV` | Application environment |
-| `DB_HOST` | MySQL host |
-| `DB_PORT` | MySQL port |
-| `DB_NAME` | Database name |
-| `DB_USER` | MySQL username |
-| `DB_PASSWORD` | MySQL password |
-| `JWT_SECRET` | Secret used to sign JWTs |
-| `JWT_EXPIRES_IN` | JWT expiration period |
-| `FRONTEND_URL` | Frontend URL configuration |
-
-## Security
-
-- Passwords are stored as bcrypt hashes rather than plain text.
-- Protected endpoints require JWT authentication.
-- Users can delete only their own lost/found reports.
-- Users cannot claim their own found-item report.
-- Claim verification limits repeated failed attempts.
-- Claim status checks prevent invalid state transitions.
-
-## License
-
-This project is licensed under the MIT License.
-
+Instead of relying on manual coordination alone, the system uses automated verification and a two-party confirmation workflow to make the return process more organized and reliable.
