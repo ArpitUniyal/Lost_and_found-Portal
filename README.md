@@ -472,20 +472,6 @@ http://localhost:8080
 
 ---
 
-## 4. Run the Frontend
-
-Open the `frontend` folder in VS Code.
-
-Start `index.html` using **Live Server**.
-
-The frontend will typically run at:
-
-```text
-http://127.0.0.1:5500/frontend/index.html
-```
-
----
-
 # Project Goal
 
 The project focuses on creating a structured digital process for handling campus lost-and-found items:
