@@ -128,45 +128,6 @@ This prevents conflicting claim operations and ensures that completed or locked 
 
 ---
 
-# Password Reset Flow
-
-Users can reset their password using their registered email address.
-
-```text
-Forgot Password
-       │
-       ▼
-Enter Registered Email
-       │
-       ▼
-Generate Secure Reset Token
-       │
-       ▼
-Store Token + Expiry
-       │
-       ▼
-Send Reset Link via Email
-       │
-       ▼
-User Sets New Password
-       │
-       ▼
-Password Hashed with BCrypt
-       │
-       ▼
-Reset Token Invalidated
-```
-
-### Security Features
-
-- Password reset tokens are time-limited.
-- Tokens are linked to a specific student account.
-- Passwords are stored using BCrypt hashing.
-- Reset tokens are invalidated after successful password reset.
-- The same reset link cannot be reused.
-
----
-
 # Technology Stack
 
 ## Frontend
