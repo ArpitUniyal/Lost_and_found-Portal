@@ -112,11 +112,9 @@ After a claim is approved, both participants can independently confirm the retur
 
 ---
 
-## Finder-to-Owner Notification
-
-A finder can notify the student associated with a lost-item report when they believe they have found the item.
-
-The system links relevant lost and found records through the claim workflow and prevents conflicting active notifications.
+Email notifications:
+- Finder → Owner: The owner receives an email when a finder reports a matching found item.
+- Owner → Finder: The finder receives an email when the owner approves the claim request.
 
 ---
 
