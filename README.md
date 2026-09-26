@@ -112,7 +112,8 @@ After a claim is approved, both participants can independently confirm the retur
 
 ---
 
-Email notifications:
+## Email notifications
+
 - Finder → Owner: The owner receives an email when a finder reports a matching found item.
 - Owner → Finder: The finder receives an email when the owner approves the claim request.
 
